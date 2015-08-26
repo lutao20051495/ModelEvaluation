@@ -1,4 +1,7 @@
 
+#ifndef CLASSIFIER
+#define CLASSIFIER
+
 #include <caffe/caffe.hpp>
 #include <opencv2/opencv.hpp>
 #include <vector>
@@ -37,3 +40,5 @@ public:
 	Mat mean_;
 	vector<string> labels_;
 };
+
+#endif

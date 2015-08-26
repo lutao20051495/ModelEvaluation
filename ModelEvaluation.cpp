@@ -7,6 +7,15 @@ using namespace std;
 #include "file.h"
 #include "image.h"
 
+ModelEvaluation::ModelEvaluation(Classifier& clf, Size& patch_size, vector<float>& thresh_vec)
+:clf_(clf), patch_size_(patch_size), thresh_vec_(thresh_vec)
+{
+	load_all_neg_img_ = false;
+	sample_patch_num_ = 10;
+	max_test_num_ = 1000000;
+	display_ = 100;
+}
+
 bool ModelEvaluation::isCorrect(vector<float>& score_vec, int label, float thresh)
 {
 	if (score_vec[label]>thresh)
@@ -33,7 +42,7 @@ bool ModelEvaluation::isCorrect(float score, int label, float thresh)
 	    }
 }
 
-float ModelEvaluation::calcMr(string& pos_patch_dir)
+float ModelEvaluation::calcMr(const string& pos_patch_dir)
 {
 	vector<string> file_name_vec;
 	GetFileName(file_name_vec, pos_patch_dir, "bmp");
@@ -60,7 +69,7 @@ float ModelEvaluation::calcMr(string& pos_patch_dir)
 }
 
 
-float ModelEvaluation::calcFpr(string& img_dir)
+float ModelEvaluation::calcFpr(const string& img_dir)
 {
 	cv::RNG rng(cv::getTickCount());
 	int test_num = 0;
