@@ -10,6 +10,11 @@ public:
 	Classifier	clf_;
 	bool load_all_img;
 	vector<float> thresh_vec_;
+	int display_;
+	int max_test_num_;
+	bool load_all_neg_img_;
+	int sample_patch_num_;
+	Size patch_size_;
 public:
 	ModelEvaluation(){};
 	float calcFpr(string& neg_img_dir);

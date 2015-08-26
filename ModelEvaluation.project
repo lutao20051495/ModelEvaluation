@@ -10,6 +10,8 @@
     <File Name="file.h"/>
     <File Name="Classifier.h"/>
     <File Name="Classifier.cpp"/>
+    <File Name="image.h"/>
+    <File Name="image.cpp"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <Configuration Name="Debug" CompilerType="gnu g++" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">

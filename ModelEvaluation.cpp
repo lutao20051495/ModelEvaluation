@@ -5,7 +5,7 @@ using namespace std;
 
 #include "ModelEvaluation.h"
 #include "file.h"
-
+#include "image.h"
 
 bool ModelEvaluation::isCorrect(vector<float>& score_vec, int label, float thresh)
 {
@@ -57,6 +57,69 @@ float ModelEvaluation::calcMr(string& pos_patch_dir)
 		}
 	}
 	return (float)err_num/sum_num;
+}
+
+
+float ModelEvaluation::calcFpr(string& img_dir)
+{
+	cv::RNG rng(cv::getTickCount());
+	int test_num = 0;
+	int fp_num = 0;
+	if (load_all_neg_img_)
+	{
+		vector<Mat> img_vec;
+		loadImage(img_dir, img_vec, "jpg");
+
+		while (test_num<max_test_num_)
+		{
+			int img_index = rng.uniform(0, img_vec.size());
+			Mat patch;
+			genRandPatch(img_vec[img_index], patch, patch_size_);
+			vector<float> score_vec = clf_.Predict(patch);
+			if (!isCorrect(score_vec, 0, thresh_vec_[0]))
+			{
+				fp_num++;
+			}
+			test_num++;
+			if ((test_num+1)%display_ == 0)
+			{
+				cout << "test patch" << test_num << "\t" << (float)fp_num/test_num; 
+			}
+		}
+	}
+	else
+	{
+	    	vector<string> file_name_vec;
+		GetFileName(file_name_vec, img_dir, "jpg");
+		while (test_num<max_test_num_)
+		{
+			int img_index = rng.uniform(0, file_name_vec.size());
+			string img_name = img_dir + "/" + file_name_vec[img_index];
+			Mat img = imread(img_name, -1);
+			if (!img.data)
+			{
+				continue;
+			}
+			vector<Mat> patch_vec;
+			genRandPatch(img, patch_vec, patch_size_, sample_patch_num_);
+			for (unsigned int i=0; i<sample_patch_num_; i++)
+			{
+				vector<float> score_vec = clf_.Predict(patch_vec[i]);
+				if (!isCorrect(score_vec,0,thresh_vec_[0]))
+				{
+					fp_num++;
+				}
+			}
+			test_num += sample_patch_num_;
+			if ((1+test_num)%display_==0)
+			{
+				cout << "test patch" << test_num << "\t" << (float)fp_num/test_num; 
+			}
+		}
+	}
+	float fpr = (float)fp_num/test_num;
+	cout << "fpr:\t" << fpr << endl;
+	return fpr;
 }
 
 
