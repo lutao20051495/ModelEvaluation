@@ -16,10 +16,10 @@ typedef std::pair<string, float> Prediction;
 class Classifier {
 public:
 	Classifier(){};
-	Classifier(const string& model_file,
-		    const string& trained_file,
-		    const string& mean_file,
-		    const string& label_file);
+	Classifier(const string& proto_file_path,
+		    const string& model_file_path,
+		    const string& mean_file_path,
+		    const string& label_file_path);
 
 	vector<Prediction> Classify(const cv::Mat& img, int N = 5);
 	

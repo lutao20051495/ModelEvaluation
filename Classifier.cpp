@@ -7,10 +7,10 @@ static bool PairCompare(const std::pair<float, int>& lhs,
   return lhs.first > rhs.first;
 }
 
-Classifier::Classifier(const string& model_file,
-                       const string& trained_file,
-                       const string& mean_file,
-                       const string& label_file) 
+Classifier::Classifier(const string& proto_file_path,
+                       const string& model_file_path,
+                       const string& mean_file_path,
+                       const string& label_file_path) 
 {
 #ifdef CPU_ONLY
 	Caffe::set_mode(Caffe::CPU);
@@ -19,8 +19,8 @@ Classifier::Classifier(const string& model_file,
 #endif
 
 	/* Load the network. */
-	net_.reset(new Net<float>(model_file, TEST));
-	net_->CopyTrainedLayersFrom(trained_file);
+	net_.reset(new Net<float>(proto_file_path, TEST));
+	net_->CopyTrainedLayersFrom(model_file_path);
 
 	CHECK_EQ(net_->num_inputs(), 1) << "Network should have exactly one input.";
 	CHECK_EQ(net_->num_outputs(), 1) << "Network should have exactly one output.";
@@ -32,11 +32,11 @@ Classifier::Classifier(const string& model_file,
 	input_geometry_ = cv::Size(input_layer->width(), input_layer->height());
 
 	/* Load the binaryproto mean file. */
-	SetMean(mean_file);
+	SetMean(mean_file_path);
 
 	/* Load labels. */
-	std::ifstream labels(label_file.c_str());
-	CHECK(labels) << "Unable to open labels file " << label_file;
+	std::ifstream labels(label_file_path.c_str());
+	CHECK(labels) << "Unable to open labels file " << label_file_path;
 	string line;
 	while (std::getline(labels, line))
 		labels_.push_back(string(line));
