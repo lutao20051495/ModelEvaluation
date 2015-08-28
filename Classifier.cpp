@@ -32,7 +32,7 @@ Classifier::Classifier(const string& proto_file_path,
 	input_geometry_ = cv::Size(input_layer->width(), input_layer->height());
 
 	/* Load the binaryproto mean file. */
-	SetMean(mean_file_path);
+	SetMean(mean_file_path, input_geometry_);
 
 	/* Load labels. */
 	std::ifstream labels(label_file_path.c_str());
@@ -48,9 +48,14 @@ Classifier::Classifier(const string& proto_file_path,
 
 
 /* Load the mean file in binaryproto format. */
-void Classifier::SetMean(const string& mean_file) {
+void Classifier::SetMean(const string& mean_file_path, Size& patch_size) {
+    if (mean_file_path.length() <= 0)
+    {
+	    mean_ = Mat::zeros(patch_size, CV_32FC1);
+	    return;
+    }
   BlobProto blob_proto;
-  ReadProtoFromBinaryFileOrDie(mean_file.c_str(), &blob_proto);
+  ReadProtoFromBinaryFileOrDie(mean_file_path.c_str(), &blob_proto);
 
   /* Convert from BlobProto to Blob<float> */
   Blob<float> mean_blob;
@@ -171,6 +176,12 @@ void Classifier::Preprocess(const cv::Mat& img,
   /* This operation will write the separate BGR planes directly to the
    * input layer of the network because it is wrapped by the cv::Mat
    * objects in input_channels. */
+   
+   sample_normalized = sample_normalized/256.0f;
+   /*
+   cv::imshow("test patch", sample_normalized);
+   cv::waitKey();
+    */
   cv::split(sample_normalized, *input_channels);
 
   CHECK(reinterpret_cast<float*>(input_channels->at(0).data)

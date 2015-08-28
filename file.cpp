@@ -6,6 +6,8 @@
     #include <sys/stat.h>
 #endif 
 
+#include <iostream>
+using namespace std;
 #include "file.h"
 
 /* Get file name extension */
@@ -15,15 +17,17 @@ string getFileNameExt(const string& file_name)
 }
 
 /* Returns a list of files in a directory (except the ones that begin with a dot) */
-void GetFileName(std::vector<string> &out, const string &directory, const string& type)
+bool GetFileName(std::vector<string> &out, const string &directory, const string& type)
 {
 #ifdef WINDOWS
 	HANDLE dir;
 	WIN32_FIND_DATA file_data;
 
 	if ((dir = FindFirstFile((directory + "/*" +).c_str(), &file_data)) == INVALID_HANDLE_VALUE)
-		return; /* No files found */
-
+	{
+		cout << "no file found!" << endl;
+		return false; 
+	}
 	do {
 		const string file_name = file_data.cFileName;
 		const bool is_directory = (file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
@@ -47,6 +51,11 @@ void GetFileName(std::vector<string> &out, const string &directory, const string
     class stat st;
 
     dir = opendir(directory.c_str());
+    if(!dir)
+    {
+	    cout << "no files found in " << directory << endl;
+	    return false;
+    }
     while ((ent = readdir(dir)) != NULL) 
     {
 	    const string file_name = ent->d_name;
@@ -65,9 +74,10 @@ void GetFileName(std::vector<string> &out, const string &directory, const string
 	
 	    if (getFileNameExt(file_name)==type)
 	    {
-		    out.push_back(full_file_name);
+		    out.push_back(file_name);
 	    }
     }
     closedir(dir);
 #endif
+    return true;
 } // GetFilesInDirectory

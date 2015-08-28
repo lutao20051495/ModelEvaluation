@@ -26,7 +26,7 @@ public:
 	vector<float> Predict(const Mat& img);
 
  private:
-	void SetMean(const string& mean_file);
+	void SetMean(const string& mean_file, Size& patch_size);
 
 	void WrapInputLayer(std::vector<Mat>* input_channels);
 

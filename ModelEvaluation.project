@@ -22,7 +22,7 @@
       </Compiler>
       <Linker Options="/home/lt/workspace/caffe/build/lib/libcaffe.so;/usr/lib/libopencv_core.so.2.3;/usr/lib/libopencv_imgproc.so.2.3;/usr/lib/libopencv_highgui.so.2.3" Required="yes"/>
       <ResourceCompiler Options="" Required="no"/>
-      <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Debug" Command="./$(ProjectName)" CommandArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes"/>
+      <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Debug" Command="./$(ProjectName)" CommandArguments="0 ../models/lenet/deploy.prototxt ../models/lenet/snapshots_iter_3000.caffemodel &quot;&quot; ../models/lenet/label.txt  ../neg_img 0.9 0" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes"/>
       <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;"/>
       <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="">
         <PostConnectCommands/>

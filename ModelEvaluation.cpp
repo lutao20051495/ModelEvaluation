@@ -7,18 +7,19 @@ using namespace std;
 #include "file.h"
 #include "image.h"
 
-ModelEvaluation::ModelEvaluation(Classifier& clf, Size& patch_size, vector<float>& thresh_vec)
-:clf_(clf), patch_size_(patch_size), thresh_vec_(thresh_vec)
+ModelEvaluation::ModelEvaluation(Classifier& clf, Size& patch_size, float thresh)
+:clf_(clf), patch_size_(patch_size),thresh_(thresh)
 {
 	load_all_neg_img_ = false;
 	sample_patch_num_ = 10;
-	max_test_num_ = 1000000;
-	display_ = 100;
+	max_test_num_ = 100000;
+	display_ = 10000;
 }
 
-bool ModelEvaluation::isCorrect(vector<float>& score_vec, int label, float thresh)
+
+bool ModelEvaluation::Positive(float score)
 {
-	if (score_vec[label]>thresh)
+	if ( score >thresh_ )
 	{
 		return true;
 	}
@@ -28,24 +29,14 @@ bool ModelEvaluation::isCorrect(vector<float>& score_vec, int label, float thres
 	}
 }
 
-
-bool ModelEvaluation::isCorrect(float score, int label, float thresh)
-{
-	if ( (label&&(score>thresh))
-		|| (!label&&((1-score)>=thresh)) )
-	    {
-		    return true;
-	    }
-	    else
-	    {
-		    return false;
-	    }
-}
-
 float ModelEvaluation::calcMr(const string& pos_patch_dir)
 {
 	vector<string> file_name_vec;
-	GetFileName(file_name_vec, pos_patch_dir, "bmp");
+	if (!GetFileName(file_name_vec, pos_patch_dir, "bmp")
+		|| file_name_vec.size()<=0)
+	{
+		return 0.0f;
+	}
 	
 	int err_num = 0;
 	int sum_num = 0;
@@ -60,9 +51,19 @@ float ModelEvaluation::calcMr(const string& pos_patch_dir)
 		sum_num++;
 		
 		vector<float> score_vec = clf_.Predict(img);
-		if (!isCorrect(score_vec, 1, thresh_vec_[1]))
+		/*
+		for(int k=0; k<score_vec.size(); k++)
+		{
+			cout << "label " << k << "\t" << score_vec[k] << endl;
+		}
+		 //*/
+		if (!Positive(score_vec[1]))
 		{
 			err_num++;
+		}
+		if(sum_num%display_==0)
+		{
+			cout << "test patch " << sum_num << "\t\t" << (float)err_num/sum_num << endl; 
 		}
 	}
 	return (float)err_num/sum_num;
@@ -85,21 +86,26 @@ float ModelEvaluation::calcFpr(const string& img_dir)
 			Mat patch;
 			genRandPatch(img_vec[img_index], patch, patch_size_);
 			vector<float> score_vec = clf_.Predict(patch);
-			if (!isCorrect(score_vec, 0, thresh_vec_[0]))
+			if (Positive(score_vec[1]))
 			{
 				fp_num++;
 			}
 			test_num++;
 			if ((test_num+1)%display_ == 0)
 			{
-				cout << "test patch" << test_num << "\t" << (float)fp_num/test_num; 
+				cout << "test patch " << test_num << "\t\t" << (float)fp_num/test_num << endl; 
 			}
 		}
 	}
 	else
 	{
 	    	vector<string> file_name_vec;
-		GetFileName(file_name_vec, img_dir, "jpg");
+		if (!GetFileName(file_name_vec, img_dir, "jpg")
+			|| file_name_vec.size()<=0)
+		{
+			return 0.0;
+		}
+		
 		while (test_num<max_test_num_)
 		{
 			int img_index = rng.uniform(0, file_name_vec.size());
@@ -114,20 +120,26 @@ float ModelEvaluation::calcFpr(const string& img_dir)
 			for (unsigned int i=0; i<sample_patch_num_; i++)
 			{
 				vector<float> score_vec = clf_.Predict(patch_vec[i]);
-				if (!isCorrect(score_vec,0,thresh_vec_[0]))
+				/*
+				for(int k=0; k<score_vec.size(); k++)
 				{
+					cout << "label " << k << "\t" << score_vec[k] << endl;
+				}
+				 */
+				if (Positive(score_vec[1]))
+				{
+					//cout << "fp score: " << score_vec[1] << endl;  
 					fp_num++;
 				}
 			}
 			test_num += sample_patch_num_;
-			if ((1+test_num)%display_==0)
+			if (test_num%display_==0)
 			{
-				cout << "test patch" << test_num << "\t" << (float)fp_num/test_num; 
+				cout << "test patch " << test_num << "\t\t" << (float)fp_num/test_num << endl; 
 			}
 		}
 	}
 	float fpr = (float)fp_num/test_num;
-	cout << "fpr:\t" << fpr << endl;
 	return fpr;
 }
 

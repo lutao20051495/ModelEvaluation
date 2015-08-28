@@ -6,7 +6,9 @@ void evaluate( const string& proto_file_path,
 		const string& model_file_path,
 		const string& mean_file_path,
 		const string& label_file_path,
-		const string& dir, int option);
+		const string& dir, 
+		float thresh,
+		int option);
 
 int main(int argc, char **argv)
 {
@@ -20,7 +22,7 @@ int main(int argc, char **argv)
 	    case 0:
 	    {
 		    evaluate(string(argv[2]), string(argv[3]), string(argv[4]), string(argv[5]),
-					string(argv[5]), atoi(argv[3]));
+					string(argv[6]), atof(argv[7]), atoi(argv[8]));
 		    break;
 	    }
 	    default:
@@ -34,26 +36,29 @@ void evaluate( const string& proto_file_path,
 		const string& model_file_path,
 		const string& mean_file_path,
 		const string& label_file_path,
-		const string& dir, int option)
+		const string& dir, 
+		float thresh,
+		int option)
 {
 
 	Classifier clf(proto_file_path, model_file_path, mean_file_path, label_file_path);
 	Size patch_size(48,48);
-	vector<float> thresh_vec(2);
-	thresh_vec[1] = 0.5;
-	thresh_vec[0] = 0.5;
 		
-	ModelEvaluation model_evl(clf, patch_size, thresh_vec);
-	
-	if(option == 0)
+	ModelEvaluation model_evl(clf, patch_size, thresh);
+	cout << "thresh: " << thresh << endl;
+	if(option == 1)
 	{
 		float mr = model_evl.calcMr(dir);
 		cout << "mr:\t" << mr << endl;
 	}
-	else if(option == 1)
+	else if(option == 0)
 	{
 		float fpr = model_evl.calcFpr(dir);
 		cout << "fpr:\t" << fpr << endl;
+	}
+	else 
+	{
+		cout << "err option in evalute function" << endl;
 	}
 	return;
 }
